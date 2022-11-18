@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+
 from pydantic import BaseModel, validator
 
 from poker.constants import Rank, Suit, Value
@@ -42,6 +44,11 @@ class Hand(BaseModel):
         if len(cards) != 5:
             raise ValueError("Hand must have five cards.")
         return cards
+
+    @property
+    def value_counts(self) -> list[tuple[Value, int]]:
+        """Return count of each card value in hand."""
+        return Counter([card.value for card in self.cards]).most_common()
 
 
 class RankedHand(Hand):

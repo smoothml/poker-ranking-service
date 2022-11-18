@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "poker"
-version = "0.2.4"
+version = "1.0.0"
 description = "Single poker hand ranking service."
 authors = ["Paul Harrison"]
 readme = "README.md"
