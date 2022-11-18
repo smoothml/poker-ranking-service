@@ -28,6 +28,3 @@ class Value(IntEnum):
     JACK = 11
     QUEEN = 12
     KING = 13
-
-
-
