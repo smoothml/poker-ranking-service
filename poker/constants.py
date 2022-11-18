@@ -6,10 +6,10 @@ from poker.utils.enum import AutoName
 class Suit(AutoName):
     """Card suit enum."""
 
-    CLUBS: auto()
-    DIAMONDS: auto()
-    HEARTS: auto()
-    SPADES: auto()
+    CLUBS = auto()
+    DIAMONDS = auto()
+    HEARTS = auto()
+    SPADES = auto()
 
 
 class Value(IntEnum):
