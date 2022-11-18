@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "poker"
-version = "0.2.3"
+version = "0.2.4"
 description = "Single poker hand ranking service."
 authors = ["Paul Harrison"]
 readme = "README.md"
@@ -10,17 +10,18 @@ python = ">=3.11,<3.12"
 pydantic = "^1.10.2"
 
 [tool.poetry.group.test.dependencies]
+coverage = "^6.5.0"
 pytest = "^7.2.0"
 
 
 [tool.poetry.group.lint.dependencies]
 black = "^22.10.0"
-isort = "^5.10.1"
 flake8 = "^5.0.4"
 flake8-builtins = "^2.0.1"
 flake8-blind-except = "^0.2.1"
 flake8-eradicate = "^1.4.0"
 flake8-use-fstring = "^1.4"
+isort = "^5.10.1"
 mypy = "^0.991"
 pydocstyle = "^6.1.1"
 

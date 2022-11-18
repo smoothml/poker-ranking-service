@@ -18,6 +18,10 @@ clean: ## Remove python cache files
 	-@find . -name '*.pytest_cache' -exec rm -fr {} +;
 	-@find . -name '*.coverage' -exec rm -fr {} +;
 
+.PHONY: coverage
+coverage: ## Report test coverage
+	@poetry run coverage report --rcfile=setup.cfg;
+
 .PHONY: flake8
 flake8: ## Run flake8 linting
 	@poetry run flake8 poker tests --config=setup.cfg;
@@ -63,7 +67,7 @@ quality: flake8 mypy isort-check black-check pydocstyle ## Run linting checks
 
 .PHONY: test
 test: ## Run test pipeline
-	@poetry run pytest -c=setup.cfg -x
+	@poetry run coverage run --rcfile=setup.cfg --source=poker -m pytest -c=setup.cfg -x
 
 .PHONY: uninstall
 uninstall: ## Remove virtual environment
