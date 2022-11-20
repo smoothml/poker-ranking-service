@@ -1,4 +1,5 @@
 from itertools import cycle
+from typing import Optional, Union
 
 import pytest
 
@@ -7,15 +8,16 @@ from poker.models import Card, Hand
 from poker.rank.hands import (
     _is_flush,
     _is_straight,
-    is_flush,
-    is_four_of_a_kind,
-    is_full_house,
-    is_pair,
-    is_royal_flush,
-    is_straight,
-    is_straight_flush,
-    is_three_of_a_kind,
-    is_two_pair,
+    flush,
+    four_of_a_kind,
+    full_house,
+    high_card,
+    pair,
+    royal_flush,
+    straight,
+    straight_flush,
+    three_of_a_kind,
+    two_pair,
 )
 from tests.conftest import Factory
 
@@ -32,7 +34,7 @@ from tests.conftest import Factory
     ],
 )
 def test__is_flush(
-    card_factory: Factory[Card], suits: list[Suit], expected: bool
+    card_factory: Factory[Card], suits: list[Suit], expected: dict[str, Union[str, int]]
 ) -> None:
     result = _is_flush([card_factory(suit=suit) for suit in suits])
 
@@ -45,11 +47,11 @@ def test__is_flush(
 @pytest.mark.parametrize(
     "values,expected",
     [
-        ([Value.TWO, Value.TWO, Value.THREE, Value.FOUR, Value.FIVE], False),
-        ([Value.THREE, Value.TWO, Value.ACE, Value.TEN, Value.KING], False),
-        ([Value.ACE, Value.TWO, Value.THREE, Value.FOUR, Value.FIVE], True),
-        ([Value.ACE, Value.KING, Value.TEN, Value.JACK, Value.QUEEN], True),
-        ([Value.THREE, Value.FIVE, Value.TWO, Value.FOUR, Value.SIX], True),
+        ([Value.TWO, Value.TWO, Value.THREE, Value.FOUR, Value.FIVE], None),
+        ([Value.THREE, Value.TWO, Value.ACE, Value.TEN, Value.KING], None),
+        ([Value.ACE, Value.TWO, Value.THREE, Value.FOUR, Value.FIVE], Value.FIVE),
+        ([Value.ACE, Value.KING, Value.TEN, Value.JACK, Value.QUEEN], Value.ACE),
+        ([Value.THREE, Value.FIVE, Value.TWO, Value.FOUR, Value.SIX], Value.SIX),
     ],
     ids=[
         "non-unique",
@@ -60,25 +62,26 @@ def test__is_flush(
     ],
 )
 def test__is_straight(
-    card_factory: Factory[Card], values: list[Value], expected: bool
+    card_factory: Factory[Card], values: list[Value], expected: Optional[Value]
 ) -> None:
     suits = cycle(Suit)
     result = _is_straight(
         [card_factory(suit=suit, value=value) for suit, value in zip(suits, values)]
     )
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
     "values,different_suits,expected",
     [
-        ([Value.TWO, Value.TEN, Value.THREE, Value.FOUR, Value.FIVE], False, False),
-        ([Value.ACE, Value.KING, Value.TEN, Value.JACK, Value.QUEEN], False, True),
-        ([Value.ACE, Value.KING, Value.TEN, Value.JACK, Value.QUEEN], True, False),
+        ([Value.TWO, Value.TEN, Value.THREE, Value.FOUR, Value.FIVE], False, {}),
+        (
+            [Value.ACE, Value.KING, Value.TEN, Value.JACK, Value.QUEEN],
+            False,
+            {"suit": Suit.CLUBS},
+        ),
+        ([Value.ACE, Value.KING, Value.TEN, Value.JACK, Value.QUEEN], True, {}),
     ],
     ids=[
         "not-flush",
@@ -90,12 +93,12 @@ def test_is_royal_flush(
     card_factory: Factory[Card],
     values: list[Value],
     different_suits: bool,
-    expected: bool,
+    expected: dict[str, Union[str, int]],
 ) -> None:
     suits = cycle(Suit)
 
     if different_suits:
-        result = is_royal_flush(
+        result = royal_flush(
             Hand(
                 cards=[
                     card_factory(suit=suit, value=value)
@@ -104,22 +107,23 @@ def test_is_royal_flush(
             )
         )
     else:
-        result = is_royal_flush(
+        result = royal_flush(
             Hand(cards=[card_factory(value=value) for value in values])
         )
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
     "values,different_suits,expected",
     [
-        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], True, False),
-        ([Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN], False, False),
-        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], False, True),
+        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], True, {}),
+        ([Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN], False, {}),
+        (
+            [Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX],
+            False,
+            {"high": Value.SIX, "suit": Suit.CLUBS},
+        ),
     ],
     ids=[
         "straight-only",
@@ -131,12 +135,12 @@ def test_is_straight_flush(
     card_factory: Factory[Card],
     values: list[Value],
     different_suits: bool,
-    expected: bool,
+    expected: dict[str, Union[str, int]],
 ) -> None:
     suits = cycle(Suit)
 
     if different_suits:
-        result = is_straight_flush(
+        result = straight_flush(
             Hand(
                 cards=[
                     card_factory(suit=suit, value=value)
@@ -145,14 +149,11 @@ def test_is_straight_flush(
             )
         )
     else:
-        result = is_straight_flush(
+        result = straight_flush(
             Hand(cards=[card_factory(value=value) for value in values])
         )
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -166,7 +167,7 @@ def test_is_straight_flush(
                 Card(suit=Suit.SPADES, value=Value.TWO),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            True,
+            {"value": Value.TWO},
         ),
         (
             [
@@ -176,7 +177,7 @@ def test_is_straight_flush(
                 Card(suit=Suit.SPADES, value=Value.TWO),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
     ],
     ids=[
@@ -184,13 +185,12 @@ def test_is_straight_flush(
         "not-four-of-a-kind",
     ],
 )
-def test_is_four_of_a_kind(cards: list[Card], expected: bool) -> None:
-    result = is_four_of_a_kind(Hand(cards=cards))
+def test_is_four_of_a_kind(
+    cards: list[Card], expected: dict[str, Union[str, int]]
+) -> None:
+    result = four_of_a_kind(Hand(cards=cards))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -204,7 +204,7 @@ def test_is_four_of_a_kind(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.TWO),
                 Card(suit=Suit.SPADES, value=Value.THREE),
             ],
-            True,
+            {"trips": Value.TWO, "pair": Value.THREE},
         ),
         (
             [
@@ -214,7 +214,7 @@ def test_is_four_of_a_kind(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.TWO),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
     ],
     ids=[
@@ -222,21 +222,22 @@ def test_is_four_of_a_kind(cards: list[Card], expected: bool) -> None:
         "not-full-house",
     ],
 )
-def test_is_full_house(cards: list[Card], expected: bool) -> None:
-    result = is_full_house(Hand(cards=cards))
+def test_is_full_house(cards: list[Card], expected: dict[str, Union[str, int]]) -> None:
+    result = full_house(Hand(cards=cards))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
     "values,different_suits,expected",
     [
-        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], True, False),
-        ([Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN], False, True),
-        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], False, False),
+        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], True, {}),
+        (
+            [Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN],
+            False,
+            {"suit": Suit.CLUBS},
+        ),
+        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], False, {}),
     ],
     ids=[
         "straight-only",
@@ -248,12 +249,12 @@ def test_is_flush(
     card_factory: Factory[Card],
     values: list[Value],
     different_suits: bool,
-    expected: bool,
+    expected: dict[str, Union[str, int]],
 ) -> None:
     suits = cycle(Suit)
 
     if different_suits:
-        result = is_flush(
+        result = flush(
             Hand(
                 cards=[
                     card_factory(suit=suit, value=value)
@@ -262,20 +263,21 @@ def test_is_flush(
             )
         )
     else:
-        result = is_flush(Hand(cards=[card_factory(value=value) for value in values]))
+        result = flush(Hand(cards=[card_factory(value=value) for value in values]))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
     "values,different_suits,expected",
     [
-        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], True, True),
-        ([Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN], False, False),
-        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], False, False),
+        (
+            [Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX],
+            True,
+            {"high": Value.SIX},
+        ),
+        ([Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN], False, {}),
+        ([Value.TWO, Value.THREE, Value.FOUR, Value.FIVE, Value.SIX], False, {}),
     ],
     ids=[
         "straight-only",
@@ -287,12 +289,12 @@ def test_is_straight(
     card_factory: Factory[Card],
     values: list[Value],
     different_suits: bool,
-    expected: bool,
+    expected: dict[str, Union[str, int]],
 ) -> None:
     suits = cycle(Suit)
 
     if different_suits:
-        result = is_straight(
+        result = straight(
             Hand(
                 cards=[
                     card_factory(suit=suit, value=value)
@@ -301,14 +303,9 @@ def test_is_straight(
             )
         )
     else:
-        result = is_straight(
-            Hand(cards=[card_factory(value=value) for value in values])
-        )
+        result = straight(Hand(cards=[card_factory(value=value) for value in values]))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -322,7 +319,7 @@ def test_is_straight(
                 Card(suit=Suit.SPADES, value=Value.TWO),
                 Card(suit=Suit.SPADES, value=Value.THREE),
             ],
-            False,
+            {},
         ),
         (
             [
@@ -332,7 +329,7 @@ def test_is_straight(
                 Card(suit=Suit.SPADES, value=Value.ACE),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            True,
+            {"value": Value.TWO},
         ),
         (
             [
@@ -342,18 +339,17 @@ def test_is_straight(
                 Card(suit=Suit.SPADES, value=Value.ACE),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
     ],
     ids=["full-house", "three-of-a-kind", "not-three-of-a-kind"],
 )
-def test_is_three_of_a_kind(cards: list[Card], expected: bool) -> None:
-    result = is_three_of_a_kind(Hand(cards=cards))
+def test_is_three_of_a_kind(
+    cards: list[Card], expected: dict[str, Union[str, int]]
+) -> None:
+    result = three_of_a_kind(Hand(cards=cards))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -367,7 +363,7 @@ def test_is_three_of_a_kind(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.THREE),
                 Card(suit=Suit.DIAMONDS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
         (
             [
@@ -377,7 +373,7 @@ def test_is_three_of_a_kind(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.ACE),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            True,
+            {"high": Value.ACE, "low": Value.TWO},
         ),
         (
             [
@@ -387,18 +383,15 @@ def test_is_three_of_a_kind(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.ACE),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
     ],
     ids=["full-house", "two-pair", "three-of-a-kind"],
 )
-def test_is_two_pair(cards: list[Card], expected: bool) -> None:
-    result = is_two_pair(Hand(cards=cards))
+def test_is_two_pair(cards: list[Card], expected: dict[str, Union[str, int]]) -> None:
+    result = two_pair(Hand(cards=cards))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -412,7 +405,7 @@ def test_is_two_pair(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.THREE),
                 Card(suit=Suit.DIAMONDS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
         (
             [
@@ -422,7 +415,7 @@ def test_is_two_pair(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.ACE),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            False,
+            {},
         ),
         (
             [
@@ -432,15 +425,18 @@ def test_is_two_pair(cards: list[Card], expected: bool) -> None:
                 Card(suit=Suit.SPADES, value=Value.ACE),
                 Card(suit=Suit.CLUBS, value=Value.THREE),
             ],
-            True,
+            {"value": Value.TWO},
         ),
     ],
     ids=["full-house", "two-pair", "pair"],
 )
-def test_is_pair(cards: list[Card], expected: bool) -> None:
-    result = is_pair(Hand(cards=cards))
+def test_is_pair(cards: list[Card], expected: dict[str, Union[str, int]]) -> None:
+    result = pair(Hand(cards=cards))
 
-    if expected:
-        assert result
-    else:
-        assert not result
+    assert result == expected
+
+
+def test_high_card(card_factory: Factory[Card]) -> None:
+    values = [Value.TWO, Value.THREE, Value.FIVE, Value.SIX, Value.TEN]
+    result = high_card(Hand(cards=[card_factory(value=value) for value in values]))
+    assert result == {"value": Value.TEN}
