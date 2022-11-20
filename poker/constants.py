@@ -17,6 +17,11 @@ class Rank(IntEnum):
     PAIR = 9
     HIGH_CARD = 10
 
+    def __str__(self) -> str:
+        """Return string representation."""
+        out: str = self.name.lower().replace("_", " ").title()
+        return out
+
 
 class Suit(AutoName):
     """Card suit enum."""
@@ -46,7 +51,7 @@ class Value(IntEnum):
 
     def __str__(self) -> str:
         """Return string representation."""
-        if self.value in [1, 11, 12, 13]:
+        if self.value in [1, 11, 12, 13, 14]:
             out: str = self.name.lower()
         else:
             out = str(self.value)

@@ -88,3 +88,18 @@ Result: "full house: 4 over 2"
 Query: "6H 7H 8H 9H 10H"
 Result: "straight flush: 10-high diamonds"
 ```
+
+## Requirements
+- Python 3.11
+- [Poetry](https://python-poetry.org/)
+- [GNU Make](https://www.gnu.org/software/make/)
+
+## Usage
+- Install with `make install`.
+- Run linting and tests with `make quality test coverage clean`.
+- Run API with `make API`.
+- Check API health with `curl localhost:8000`
+- Query API for rank with e.g.
+  ```shell
+  curl -X POST -d '2H 3D 5S 10C KD' localhost:8000/rank
+  ```

@@ -1,6 +1,10 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
+.PHONY: api
+api: ## Run API
+	@poetry run uvicorn poker.api:app
+
 .PHONY: black
 black: ## Run black formatter
 	@poetry run black poker tests;

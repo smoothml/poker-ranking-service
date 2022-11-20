@@ -162,7 +162,7 @@ def rank_hand(hand: Hand) -> RankedHand:
     for rank, func in _FUNCTIONS.items():
         result = func(hand)
         if result:
-            out = RankedHand(
+            return RankedHand(
                 cards=hand.cards,
                 rank=rank,
                 description=DESCRIPTIONS[rank].format(**result),
@@ -170,5 +170,3 @@ def rank_hand(hand: Hand) -> RankedHand:
 
     if out is None:
         raise ValueError("No rank found.")
-
-    return out
