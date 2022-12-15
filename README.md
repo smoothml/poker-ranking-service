@@ -1,6 +1,6 @@
 # Single Poker Hand Ranking Service
-## Requirements
-This service comprises an API to compute the rank of an individual poker hand. The requirements are to:
+## Project Scope
+This service comprises an API to compute the rank of an individual poker hand. The scope of this project is to:
 
 - Write an algorithm that takes a hand of cards and identifies the ranking of the given hand.
 - Expose an API to serve this algorithm via an endpoint `/rank`, that accepts a valid poker hand and returns its ranking.
