@@ -1,0 +1,9 @@
+services:
+  api:
+    container_name: poker-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command: make api

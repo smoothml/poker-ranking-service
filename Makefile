@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 .PHONY: api
 api: ## Run API
-	@poetry run uvicorn poker.api:app
+	@poetry run uvicorn --host 0.0.0.0 poker.api:app
 
 .PHONY: black
 black: ## Run black formatter
@@ -12,6 +12,10 @@ black: ## Run black formatter
 .PHONY: black-check
 black-check: ## Run black formatter
 	@poetry run black poker tests --check;
+
+.PHONY: build
+build:  ## Build Docker container
+	@COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose -f compose.yml build;
 
 .PHONY: clean
 clean: ## Remove python cache files

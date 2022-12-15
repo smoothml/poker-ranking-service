@@ -97,7 +97,7 @@ Result: "straight flush: 10-high diamonds"
 ## Usage
 - Install with `make install`.
 - Run linting and tests with `make quality test coverage clean`.
-- Run API with `make API`.
+- Build the API container with `make build`, then run API with `docker compose up -d`.
 - Check API health with `curl localhost:8000`
 - Query API for rank with e.g.
   ```shell
